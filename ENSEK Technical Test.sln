@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ENSEK Technical Test", "ENSEK Technical Test\ENSEK Technical Test.csproj", "{CCE6E766-3B75-4DB5-83AB-8FC9F22B4CA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ENSEK Technical Test.Tests", "ENSEK Technical Test.Tests\ENSEK Technical Test.Tests.csproj", "{CA1FFD8A-FD3D-4464-9996-184D32A23229}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCE6E766-3B75-4DB5-83AB-8FC9F22B4CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCE6E766-3B75-4DB5-83AB-8FC9F22B4CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCE6E766-3B75-4DB5-83AB-8FC9F22B4CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCE6E766-3B75-4DB5-83AB-8FC9F22B4CA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA1FFD8A-FD3D-4464-9996-184D32A23229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA1FFD8A-FD3D-4464-9996-184D32A23229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA1FFD8A-FD3D-4464-9996-184D32A23229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA1FFD8A-FD3D-4464-9996-184D32A23229}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E4B763A2-206B-495B-9BA1-2D92F2DE31C0}
+	EndGlobalSection
+EndGlobal

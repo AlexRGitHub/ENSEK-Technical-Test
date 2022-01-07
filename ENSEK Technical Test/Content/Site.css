@@ -1,0 +1,48 @@
+﻿:root {
+    --ensek-background: rgb(246, 110, 61);
+    --ensek-colour: rgb(22, 44, 78);
+}
+
+navbar-inverse .navbar-brand{
+    font-size: 25px;
+}
+
+.navbar, .navbar-inverse .navbar-brand, .navbar-inverse .navbar-nav > li > a {
+    background-color: var(--ensek-background) !important;
+    color: white !important;
+    border: none;
+    margin-bottom: 10px;
+}
+
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    color:var(--ensek-colour);
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding: 15px;
+}
+
+
+.jumbotron {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+    min-height: 300px;
+}
+
+#readingsUploadArea {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+}
+
+h1 {
+    color: var(--ensek-background)!important;
+    font-size:30px!important;
+}

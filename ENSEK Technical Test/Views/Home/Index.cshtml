@@ -1,0 +1,214 @@
+﻿<div class="jumbotron">
+    <div id="readingsUploadArea">
+        <h1>ENSEK - Meter Readings Upload</h1>
+        <label for="readingsFile">Select a readings file to upload</label>
+        <input id="readingsFile" class="form-control" type="file" /> <!--accept=".csv"-->
+        <button id="readingsUploadButton" class="btn btn-default" onclick="processFile();">Upload File</button>
+        <div><span id="successfulCount"></span> <span id="failedCount"></span></div>
+    </div>
+    <table style="display:none" class="table">
+        <thead>
+            <tr>
+                <th>index</th>
+                <th>Account ID</th>
+                <th>Meter Reading Date Time</th>
+                <th>Meter Reading Value</th>
+            </tr>
+        </thead>
+        <tbody id="validDataTable" > 
+
+        </tbody>
+    </table>
+    <table style="display:none"  class="table">
+        <thead>
+            <tr>
+                <th>index</th>
+                <th>Account ID</th>
+                <th>Meter Reading Date Time</th>
+                <th>Meter Reading Value</th>
+                <th>Fail Message</th>
+            </tr>
+        </thead>
+        <tbody id="invalidDataTable">
+        </tbody>
+    </table>
+</div>
+
+<template id="validItem">
+    <tr>
+        <td class="vi-index"></td>
+        <td class="vi-accountid"></td>
+        <td class="vi-meterreadingdatetime"></td>
+        <td class="vi-meterreadingvalue"></td>
+    </tr>
+</template>
+
+<template id="invalidItem">
+    <tr>
+        <td class="ii-index"></td>
+        <td class="ii-accountid"></td>
+        <td class="ii-meterreadingdatetime"></td>
+        <td class="ii-meterreadingvalue"></td>
+        <td class="ii-reason"></td>
+    </tr>
+</template>
+<script>
+
+    function processFile() {
+        if (readingsFile.files.length == 0) {
+            //Just throw an alert for now
+            alert('No files selected');
+            return;
+        }
+
+        //Lets do some basic checks 
+        readCSVFromFile().then(d => {
+
+            //Validate the data - do some basic checks to see if we even need to bother the server.
+            let validatedData = validateData(d);
+
+            //If there is no valid data in the upload file, return an error
+            if (validatedData.valid.length == 0) {
+                throw new Error("Invalid file uploaded. No valid records found")
+            }
+
+            //Show basic error checking results
+            //if (validatedData.invalid.length > 0) {
+            //    invalidDataTable.closest('table').style.removeProperty('display');
+            //    validatedData.invalid.forEach(f => {
+            //        var template = invalidItem.content.cloneNode(true);
+
+            //        template.querySelector('.ii-index').textContent = f.line;
+            //        template.querySelector('.ii-accountid').textContent = f.data.AccountId;
+            //        template.querySelector('.ii-meterreadingdatetime').textContent = f.data.MeterReadingDateTime.toLocaleDateString('en-gb') + ' ' + f.data.MeterReadingDateTime.toLocaleTimeString('en-gb');
+            //        template.querySelector('.ii-meterreadingvalue').textContent = f.data.MeterReadValue;
+            //        template.querySelector('.ii-reason').textContent = f.reason;
+
+            //        invalidDataTable.appendChild(template);
+            //    });
+            //}
+
+
+        }).then(() => submitFile(readingsFile.files[0]))
+            .then(d => {
+
+                successfulCount.textContent = `${Object.values(d)[0]} rows loaded`
+                failedCount.textContent = `${Object.values(d)[1]} rows rejected`
+
+                Object.values(d)[0]
+            }).catch(e => alert(e));
+
+    }
+
+
+
+    //Pre check the file
+    function readCSVFromFile() {
+        var fileInput
+
+        try {
+            //grab the file from the input
+            fileInput = readingsFile.files[0];
+        }
+        catch (ex) {
+            //if there is an issue getting the file just end
+            return;
+        }
+
+        return fileReaderPromise(fileInput).then(f => {
+            //our read file will be in here
+
+            //NOTE: commas within the CSV will cause issues with reading the file
+            let lines = f.split('\n');
+
+            let headers = lines[0].split(',').map(m => m.trim());
+
+            //slice off the first row and convert each row into an object comprised of the headers
+            return lines.slice(1, Infinity).map(m => m.split(',')).map(m => headers.reduce((o, c, i) => { o[c] = m[i].replace(/[\l\r]$/, ''); return o; }, {}));
+
+        }).catch(f => {
+            //lets just send the error to an alert
+            alert(f);
+        });
+    }
+
+    function validateData(data) {
+        let valid = [];
+        let invalid = [];
+
+        data.forEach((f, i) => {
+            //Format the date first
+            try {
+                f.MeterReadingDateTime = new Date(f.MeterReadingDateTime?.split(' ').reduce((ob, cu, i) => { if (i == 0) { ob = cu.split('/').reverse().join('-') + "T" } else { ob += cu; } return ob; }, ""));
+            }
+            catch (ex) { }//Don't care about errors
+            if (isNaN(parseInt(f.MeterReadValue))) {
+                invalid.push({ line: i, data: f, reason: "Invalid Meter Read Value" });
+            }
+            else if (isNaN(f.AccountId)) {
+                invalid.push({ line: i, data: f, reason: "Invalid Account ID" });
+            }
+            else if (isNaN(f.MeterReadingDateTime)) {
+                //Invalid dates are not numbers, but valid dates are
+                invalid.push({ line: i, data: f, reason:"Invalid Date Time" });
+            }
+            else if (f.MeterReadValue.length > 5) {
+                invalid.push({line:i, data: f, reason: "Value must be formated to NNNNN" });
+            }
+            else {
+                f.MeterReadValue = parseInt(f.MeterReadValue);
+                if (f.MeterReadValue < 0) {
+                    invalid.push({ line: i, data: f, reason: "Below 0" });
+                }
+                else {
+                    valid.push({ line: i, data: f });
+                }
+            }
+        });
+
+        return { valid: valid, invalid: invalid };
+    }
+
+    function submitFile(file) {
+
+        return fetch('../api/Readings', {
+            method: 'POST'
+            , headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+            , body: file
+        }).then(r => {
+            //check for errors
+            if (r.status >= 200 && r.status <= 300) {
+                return r.json();
+            }
+            else {
+                return r.json().then(j => {
+                    throw new Error(j['odata.error']?.message.value ?? j.Message ?? "Unable to submit meter readings, please check file.");
+                });
+            }
+        });
+    }
+
+    //This function is a Promise wrapper function for FileReader
+    //I find promises cleaner and easier to deal with than "onload" and "onerror" functions
+    function fileReaderPromise(file) {
+
+        let reader;
+
+        try {
+            reader = new FileReader();
+            reader.readAsText(file);
+        }
+        catch {
+            //If there is an error reading the file return a rejected promise
+            return Promise.reject("Failed to read file");
+        }
+
+        return new Promise((res, rej) => {
+            reader.onload = () => res(reader.result);
+            reader.onerror = () => rej(reader.error);
+        });
+    }
+
+
+
+</script>
